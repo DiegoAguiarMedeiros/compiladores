@@ -1,0 +1,41 @@
+Start;
+   :-- Programa para comparar duas datas --:
+Var;
+   number dia1, mes1, ano1, dia2, mes2, ano2;
+   text  relacao;
+EndVar;
+
+   dia1 = read("Entre com o dia da primeira data:");
+   mes1 = read("Entre com o mes da primeira data:");
+   ano1 = read("Entre com o ano da primeira data:"); 
+   dia2 = read("Entre com o dia da segunda data:");  
+   mes2 = read("Entre com o mes da segunda data:");  
+   ano2 = read("Entre com o ano da segunda data:");
+   
+   IsTrue( ano1 > ano2){
+  	relacao = "maior";
+   }IsNot{
+  	IsTrue( ano1 < ano2){
+     		relacao = "menor";
+  	}IsNot{
+		IsTrue( mes1 > mes2 ){
+			relacao = "maior";
+		}IsNot{
+			IsTrue( mes1 < mes2 ){
+				relacao = "menor";
+			}IsNot{
+				IsTrue( dia1 > dia2 ){
+					relacao = "maior";
+				}IsNot{
+					IsTrue( dia1 < dia2 ){
+						relacao = "menor";
+					}IsNot{
+						relacao  = "igual";
+					}
+				}
+			}
+		}
+  	}
+   }
+   print("Relação entre a primeira e segunda datas: " , relacao);
+End;

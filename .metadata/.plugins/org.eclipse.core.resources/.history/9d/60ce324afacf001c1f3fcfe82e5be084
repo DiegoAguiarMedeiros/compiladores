@@ -1,0 +1,20 @@
+Start;
+Var;
+	number Valor,a,b,c,d,e,f,g;
+	number x,y,z;
+	text s1, s2, s3;
+EndVar;
+   Valor = 6 + 5 - (3 - 2) - 2 * 4;
+   a = x + 1 * 2 ^ 4;
+   b = 1 + 2 * 3 ^ x;
+   c = 1 ^ 2 * 3 + x;
+   d = x ^ 2 * 3 + 4;
+   e = -(3-(-2);
+   f = x-2;
+   g = 1 + x * 2 > 3 - y  || 4 == z && 5 + 1 < ( 6 + z ) *
+    	( 7 - ( 8 - 9 )) && !!! (x > y) + z;
+   s1 = "oi";
+   s2 = "mundo";
+   s3 = s1 # " " # s2 # "!";
+   print (Valor,a,b,c,d,e,f,g,s1,s2,s3);
+End;

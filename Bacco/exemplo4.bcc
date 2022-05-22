@@ -1,0 +1,14 @@
+Start;
+   @ calcula media de muitos valores
+   Var;
+      number soma, valor, qtde;
+EndVar;
+   qtde = read("quantos valores:");
+   soma = 0;
+   cont = 1;
+Repeat (cont <= qtde){
+	valor = read();
+  	soma = soma + valor;
+}
+   print ("Media:"# soma/qtde);
+End;

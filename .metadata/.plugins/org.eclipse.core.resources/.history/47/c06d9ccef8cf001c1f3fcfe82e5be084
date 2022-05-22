@@ -1,0 +1,3 @@
+Start;
+	print("H elloWorld!");
+End;
