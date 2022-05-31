@@ -38,19 +38,14 @@ public class Bacco{  public static void main(String args[])  throws ParseExcep
 
  
 
-SKIP : {
-
-   "@" : comentario_linha 
-
+SKIP : /* Comentários */
+{
+	"@" : comentario_linha
+| ":--" : comentario
 }
 <comentario_linha> SKIP: {
 	<["\n","\r"]> : DEFAULT |
    	<~[]>
-}
-SKIP : {
-
-   ":--" : comentario
-
 }
 
 <comentario> SKIP: {
@@ -63,9 +58,9 @@ SKIP : {
 
  TOKEN : {
 
-  < TEXTO: "\""["a"-"z","A"-"Z","0"-"9"," ","!"](["0"-"9"]|["a"-"z","A"-"Z"]|~["\""])* "\"" > |
-  < TIPO_DECIMAL: (["0"-"9"])*(".")?(["0"-"9"])+  > |
-  < TIPO_INTEGRAL:(["0"-"9"])+  >
+  < TEXTO: "\""(~["\""] | "\\" "\"")*"\"" > |
+  < TIPO_INTEGRAL:(["0"-"9"])+  > |
+  < TIPO_DECIMAL: (["0"-"9"])*(".")?(["0"-"9"])+  > 
 }
 
 
@@ -78,10 +73,12 @@ SKIP : {
 
 TOKEN: {
   < START:"Start" >|
+  < VAR:"Var" >|
+  < ENDAVAR:"EndVar" >|
   < ATTR: "=" > |
   < ABRE_PARENTESES:"(" > |
   < FECHA_PARENTESES:")" >|
-   < ABRE_CHAVE:"{" > |
+  < ABRE_CHAVE:"{" > |
   < FECHA_CHAVE:"}" >|
   < SOMA: "+" >|
   < SUB: "-" >|
