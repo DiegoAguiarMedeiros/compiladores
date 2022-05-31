@@ -10,7 +10,7 @@ public class Bacco{  public static void main(String args[])  throws ParseExcep
 
          analisador = new Bacco(new FileInputStream("exemplo6.bcc"));
 
-         analisador.S();
+         analisador.inicio();
 
          // System.out.println(tabela.toString());
 
@@ -106,7 +106,7 @@ TOKEN: {
 
  
 
-
+/*
 JAVACODE void S()
 
 {
@@ -123,4 +123,17 @@ JAVACODE void S()
 
    while(t.kind != EOF);
 
+}*/
+
+void inicio() : {}
+{
+	<START><FIM_DA_LINHA> corpo() <END><FIM_DA_LINHA> <EOF>
+}
+void corpo() : {}
+{
+    dvar() /*(comandos())**/
+}
+void dvar() : { }
+{
+	<VAR><FIM_DA_LINHA>
 }
