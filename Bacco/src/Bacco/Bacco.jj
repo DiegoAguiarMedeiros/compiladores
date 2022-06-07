@@ -1,14 +1,23 @@
 /**
  * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
- */options{  static = true;}PARSER_BEGIN(Bacco)package Bacco;
+ */
+options
+{
+  static = true;
+}
+
+PARSER_BEGIN(Bacco)
+package Bacco;
 import java.io.*;
-public class Bacco{  public static void main(String args[])  throws ParseException  {
+public class Bacco
+{
+  public static void main(String args[])  throws ParseException  {
 
       Bacco analisador = null;
 
       try {
 
-         analisador = new Bacco(new FileInputStream("exemplo6.bcc"));
+         analisador = new Bacco(new FileInputStream("exemplo3.bcc"));
 
          analisador.inicio();
 
@@ -34,7 +43,11 @@ public class Bacco{  public static void main(String args[])  throws ParseExcep
 
       }
 
-   }}PARSER_END(Bacco)SKIP : { " " | "\t" | "\r" | "\n" }
+   }
+}
+
+PARSER_END(Bacco)
+SKIP : { " " | "\t" | "\r" | "\n" }
 
  
 
@@ -131,9 +144,22 @@ void inicio() : {}
 }
 void corpo() : {}
 {
-    dvar() /*(comandos())**/
+    dvar() (comandos())*
 }
 void dvar() : { }
 {
-	<VAR><FIM_DA_LINHA>
+	<VAR><FIM_DA_LINHA> (criar_var())+ <ENDAVAR><FIM_DA_LINHA>
+}
+
+void criar_var() : { }
+{
+  tipo() <ID>(<VIRGULA> <ID>)* <FIM_DA_LINHA>
+}
+void tipo() : { }
+{
+    <TIPO_NUMERICO>  | <TIPO_TEXTO>
+}
+void comandos() : { }
+{
+    <TIPO_NUMERICO>
 }

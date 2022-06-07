@@ -4,7 +4,9 @@ corpo → dvar (comandos)
 
 dvar → var fimDaLinha declaVar (virgula declaVar)* endvar fimDaLinha 
 
-declaVar → tipo <id>(virgula <id>)* fimDaLinha
+declaVar →  (criar_var)+
+
+criar_var →  tipo <id>(virgula <id>)* fimDaLinha
 
 var → <Var>
 
