@@ -37,5 +37,5 @@ EndVar;
 		}
   	}
    }
-   print("Relação entre a primeira e segunda datas: " , relacao);
+   print("Relação entre a primeira e segunda datas: " # relacao);
 End;

@@ -1,16 +1,25 @@
 /**
  * JavaCC template file created by SF JavaCC plugin 1.5.28+ wizard for JavaCC 1.5.0+
- */options{  static = true;}PARSER_BEGIN(Bacco)package Bacco;
+ */
+options
+{
+  static = true;
+}
+
+PARSER_BEGIN(Bacco)
+package Bacco;
 import java.io.*;
-public class Bacco{  public static void main(String args[])  throws ParseException  {
+public class Bacco
+{
+  public static void main(String args[])  throws ParseException  {
 
       Bacco analisador = null;
 
       try {
 
-         analisador = new Bacco(new FileInputStream("exemplo6.bcc"));
+         analisador = new Bacco(new FileInputStream("exemplo5.bcc"));
 
-         analisador.S();
+         analisador.inicio();
 
          // System.out.println(tabela.toString());
 
@@ -34,23 +43,22 @@ public class Bacco{  public static void main(String args[])  throws ParseExcep
 
       }
 
-   }}PARSER_END(Bacco)SKIP : { " " | "\t" | "\r" | "\n" }
+   }
+}
+
+PARSER_END(Bacco)
+SKIP : { " " | "\t" | "\r" | "\n" }
 
  
 
-SKIP : {
-
-   "@" : comentario_linha 
-
+SKIP : /* Comentários */
+{
+	"@" : comentario_linha
+| ":--" : comentario
 }
 <comentario_linha> SKIP: {
 	<["\n","\r"]> : DEFAULT |
    	<~[]>
-}
-SKIP : {
-
-   ":--" : comentario
-
 }
 
 <comentario> SKIP: {
@@ -63,25 +71,29 @@ SKIP : {
 
  TOKEN : {
 
-  < TEXTO: "\""["a"-"z","A"-"Z","0"-"9"," ","!"](["0"-"9"]|["a"-"z","A"-"Z"]|~["\""])* "\"" > |
-  < TIPO_DECIMAL: (["0"-"9"])*(".")?(["0"-"9"])+  > |
-  < TIPO_INTEGRAL:(["0"-"9"])+  >
+  < TEXTO: "\""(~["\""] | "\\" "\"")*"\"" > |
+  < TIPO_INTEGRAL:(["0"-"9"])+  > |
+  < TIPO_DECIMAL: (["0"-"9"])*(".")?(["0"-"9"])+  > 
 }
 
 
  TOKEN [IGNORE_CASE] : {
 
   < READ: "read" > |
-  < PRINT: "print" >
+  < PRINT: "print" > |
+  < REPEAT: "repeat" >
 
 } 
 
 TOKEN: {
   < START:"Start" >|
+  < END:"End" > |
+  < VAR:"Var" >|
+  < ENDAVAR:"EndVar" >|
   < ATTR: "=" > |
   < ABRE_PARENTESES:"(" > |
   < FECHA_PARENTESES:")" >|
-   < ABRE_CHAVE:"{" > |
+  < ABRE_CHAVE:"{" > |
   < FECHA_CHAVE:"}" >|
   < SOMA: "+" >|
   < SUB: "-" >|
@@ -93,13 +105,17 @@ TOKEN: {
   < TIPO_TEXTO: "text" >|
   < TIPO_NUMERICO: "number" >|
   < ID:["a"-"z","A"-"Z"](["0"-"9"]|["a"-"z","A"-"Z"])* >|
-  < RELACAO: "==" | "!=" | "<" | "<=" | ">=" | ">" >|
+  < MAIOR: ">"> |
+  < MENOR: "<"> |
+  < MAIORIGUAL: ">="> |
+  < MENORIGUAL: "<="> |
+  < DIFERENTE: "!="> |
+  < IGUAL: "=="> |
   < AND: "&&" >|
   < OR: "||" >|
   < NOT: "!" >|
   < CONCATENAR: "#" >|
   < VIRGULA: "," > |
-  < END:"End" > |
   < FIM_DA_LINHA:";" >
 
   
@@ -126,4 +142,116 @@ JAVACODE void S()
 
    while(t.kind != EOF);
 
+}
+
+void inicio() : {}
+{
+	<START><FIM_DA_LINHA> corpo() <END><FIM_DA_LINHA><EOF>
+}
+void corpo() : {}
+{
+    (dvar())* (comandos())*
+}
+void dvar() : { }
+{
+	<VAR><FIM_DA_LINHA> (criar_var())+ <ENDAVAR><FIM_DA_LINHA>
+}
+
+void criar_var() : { }
+{
+  tipo() <ID>(<VIRGULA> <ID>)* <FIM_DA_LINHA>
+}
+void tipo() : { }
+{
+    <TIPO_NUMERICO>  | <TIPO_TEXTO>
+}
+void comandos() : { }
+{
+    attr() | IsTrue()  | print() | loop()
+}
+void attr() : { }
+{
+    <ID><ATTR>(exp() | read())<FIM_DA_LINHA>
+}
+void exp() : { }
+{
+    expAuxiliar()
+}
+
+void expAuxiliar() : {}
+{
+	termo()
+}	
+
+void termo() : {}
+{
+	termo1()(<OR> termo1())*	
+}
+
+void termo1() : {}
+{
+	termo2()(<AND> termo2())*
+}
+
+void termo2() : {}
+{
+	termo3()((<MAIOR> | <MENOR> | <MAIORIGUAL> | <MENORIGUAL> | <DIFERENTE> | <IGUAL> | <CONCATENAR>) termo3())*
+}
+
+void termo3() : {}
+{
+	termo4()( <SOMA> termo4()| <SUB> termo4())*
+}
+
+void termo4() : {}
+{
+	termo5()( <MULTI> termo5()| <DIVISAO> termo5())*
+}
+
+void termo5() : {}
+{
+	termo6()( <POTENCIA> termo6())*
+}
+
+void termo6() : {}
+{
+	(<NOT>)* termo7()
+}
+
+void termo7() : {}
+{
+	(<CONCATENAR>)* termo8()
+}
+void termo8() : {}
+{
+	(<SUB> |<SOMA>)? (<TIPO_INTEGRAL> | < TIPO_DECIMAL>	| <ID>	|<TEXTO>| <ABRE_PARENTESES> expAuxiliar() <FECHA_PARENTESES>)+
+}
+void IsTrue() : {}
+{
+	<IF> <ABRE_PARENTESES> exp() <FECHA_PARENTESES> <ABRE_CHAVE>(comandos())* <FECHA_CHAVE>(IsNot())?
+}
+	     		
+void IsNot() : {}
+{
+	<ELSE> <ABRE_CHAVE>(comandos())*<FECHA_CHAVE>
+}
+void read() : { }
+{
+    <READ> <ABRE_PARENTESES> corpoEntrada()<FECHA_PARENTESES>
+}
+void corpoEntrada() : { }
+{
+    (<TEXTO> )?
+}
+void print() : { }
+{
+   <PRINT> <ABRE_PARENTESES> corpoMostra() <FECHA_PARENTESES> <FIM_DA_LINHA>
+}
+void corpoMostra() : {}
+{	
+	(<TEXTO> | < ID >)+ ( <CONCATENAR> exp())?
+}
+void loop() : { }
+{
+    <REPEAT> <ABRE_PARENTESES>exp()<FECHA_PARENTESES> <ABRE_CHAVE>(comandos())*<FECHA_CHAVE>
 }

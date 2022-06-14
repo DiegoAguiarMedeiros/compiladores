@@ -3,7 +3,7 @@ Start;
    Calcula média final segundo critérios da FAESA --:
  
 Var;
-   number Nota1, Nota2, Nota3,MediaSemestral, MediaFinal, PrFinal, Faltas
+   number Nota1, Nota2, Nota3,MediaSemestral, MediaFinal, PrFinal, Faltas;
    text  Situacao;
 EndVar;
    
@@ -18,7 +18,7 @@ EndVar;
  
    MediaFinal = MediaSemestral;
  
-   IsTrue( Faltas > 50 or (Faltas > 25 and MediaSemestral < 1.5) ){
+   IsTrue( Faltas > 50 || (Faltas > 25 && MediaSemestral < 1.5) ){
  
       situacao = "reprovado por faltas";
  
@@ -32,9 +32,7 @@ EndVar;
  
          IsTrue( MediaSemestral < 7 ){
  
-            print("Nota mínima para a prova final:",
- 
-                    (5 - MediaSemestral * 0.4)/0.6);
+            print("Nota mínima para a prova final:"# (5 - MediaSemestral * 0.4)/0.6);
  
             PrFinal = read("Entre com a nota da prova final:");
  
@@ -56,8 +54,6 @@ EndVar;
  
    }
  
-   print( "Média final é:", MediaFinal, "Situacao:",Situacao,
- 
-           "Faltas(%):", PercentualFaltas);
- 
+   print( "Média final é:"# MediaFinal # "Situacao:" # Situacao # "Faltas(%):" # PercentualFaltas);
+
 End;

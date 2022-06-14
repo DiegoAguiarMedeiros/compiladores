@@ -17,7 +17,7 @@ public class Bacco
 
       try {
 
-         analisador = new Bacco(new FileInputStream("exemplo3.bcc"));
+         analisador = new Bacco(new FileInputStream("exemplo5.bcc"));
 
          analisador.inicio();
 
@@ -80,12 +80,14 @@ SKIP : /* Comentários */
  TOKEN [IGNORE_CASE] : {
 
   < READ: "read" > |
-  < PRINT: "print" >
+  < PRINT: "print" > |
+  < REPEAT: "repeat" >
 
 } 
 
 TOKEN: {
   < START:"Start" >|
+  < END:"End" > |
   < VAR:"Var" >|
   < ENDAVAR:"EndVar" >|
   < ATTR: "=" > |
@@ -103,13 +105,17 @@ TOKEN: {
   < TIPO_TEXTO: "text" >|
   < TIPO_NUMERICO: "number" >|
   < ID:["a"-"z","A"-"Z"](["0"-"9"]|["a"-"z","A"-"Z"])* >|
-  < RELACAO: "==" | "!=" | "<" | "<=" | ">=" | ">" >|
+  < MAIOR: ">"> |
+  < MENOR: "<"> |
+  < MAIORIGUAL: ">="> |
+  < MENORIGUAL: "<="> |
+  < DIFERENTE: "!="> |
+  < IGUAL: "=="> |
   < AND: "&&" >|
   < OR: "||" >|
   < NOT: "!" >|
   < CONCATENAR: "#" >|
   < VIRGULA: "," > |
-  < END:"End" > |
   < FIM_DA_LINHA:";" >
 
   
@@ -119,7 +125,7 @@ TOKEN: {
 
  
 
-/*
+
 JAVACODE void S()
 
 {
@@ -136,15 +142,15 @@ JAVACODE void S()
 
    while(t.kind != EOF);
 
-}*/
+}
 
 void inicio() : {}
 {
-	<START><FIM_DA_LINHA> corpo() <END><FIM_DA_LINHA> <EOF>
+	<START><FIM_DA_LINHA> corpo() <END><FIM_DA_LINHA><EOF>
 }
 void corpo() : {}
 {
-    dvar() (comandos())*
+    (dvar())* (comandos())*
 }
 void dvar() : { }
 {
@@ -161,5 +167,91 @@ void tipo() : { }
 }
 void comandos() : { }
 {
-    <TIPO_NUMERICO>
+    attr() | IsTrue()  | print() | loop()
+}
+void attr() : { }
+{
+    <ID><ATTR>(exp() | read())<FIM_DA_LINHA>
+}
+void exp() : { }
+{
+    expAuxiliar()
+}
+
+void expAuxiliar() : {}
+{
+	termo()
+}	
+
+void termo() : {}
+{
+	termo1()(<OR> termo1())*	
+}
+
+void termo1() : {}
+{
+	termo2()(<AND> termo2())*
+}
+
+void termo2() : {}
+{
+	termo3()((<MAIOR> | <MENOR> | <MAIORIGUAL> | <MENORIGUAL> | <DIFERENTE> | <IGUAL> | <CONCATENAR>) termo3())*
+}
+
+void termo3() : {}
+{
+	termo4()( <SOMA> termo4()| <SUB> termo4())*
+}
+
+void termo4() : {}
+{
+	termo5()( <MULTI> termo5()| <DIVISAO> termo5())*
+}
+
+void termo5() : {}
+{
+	termo6()( <POTENCIA> termo6())*
+}
+
+void termo6() : {}
+{
+	(<NOT>)* termo7()
+}
+
+void termo7() : {}
+{
+	(<CONCATENAR>)* termo8()
+}
+void termo8() : {}
+{
+	(<SUB> |<SOMA>)? (<TIPO_INTEGRAL> | < TIPO_DECIMAL>	| <ID>	|<TEXTO>| <ABRE_PARENTESES> expAuxiliar() <FECHA_PARENTESES>)+
+}
+void IsTrue() : {}
+{
+	<IF> <ABRE_PARENTESES> exp() <FECHA_PARENTESES> <ABRE_CHAVE>(comandos())* <FECHA_CHAVE>(IsNot())?
+}
+	     		
+void IsNot() : {}
+{
+	<ELSE> <ABRE_CHAVE>(comandos())*<FECHA_CHAVE>
+}
+void read() : { }
+{
+    <READ> <ABRE_PARENTESES> corpoEntrada()<FECHA_PARENTESES>
+}
+void corpoEntrada() : { }
+{
+    (<TEXTO> )?
+}
+void print() : { }
+{
+   <PRINT> <ABRE_PARENTESES> corpoMostra() <FECHA_PARENTESES> <FIM_DA_LINHA>
+}
+void corpoMostra() : {}
+{	
+	(<TEXTO> | < ID >)+ ( <CONCATENAR> exp())?
+}
+void loop() : { }
+{
+    <REPEAT> <ABRE_PARENTESES>exp()<FECHA_PARENTESES> <ABRE_CHAVE>(comandos())*<FECHA_CHAVE>
 }
