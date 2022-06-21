@@ -8,20 +8,30 @@ options
 
 PARSER_BEGIN(Bacco)
 package Bacco;
+
 import java.io.*;
+import java.util.List;
+import java.util.LinkedList;
+
+
 public class Bacco
 {
+
+	static public boolean erro = false;
+	static List<Comando> listaComando = new LinkedList<Comando>();
+	static Tabela tab = new Tabela();
+  
   public static void main(String args[])  throws ParseException  {
 
-      Bacco analisador = null;
+
 
       try {
 
-         analisador = new Bacco(new FileInputStream("exemplo5.bcc"));
+         Bacco analisador = new Bacco(new FileInputStream("exemplo5.bcc"));
 
-         analisador.inicio();
-
-         // System.out.println(tabela.toString());
+         analisador.inicio(listaComando);
+                         System.out.println("\u005cnTabela de Simbolos (Variaveis): \u005cn\u005cn"+tab.toString());
+         // System.out.println(tab.toString());
 
       }
 
@@ -144,114 +154,390 @@ JAVACODE void S()
 
 }
 
-void inicio() : {}
+void inicio(List<Comando> lista) : {}
 {
-	<START><FIM_DA_LINHA> corpo() <END><FIM_DA_LINHA><EOF>
+	<START><FIM_DA_LINHA> corpo(lista) <END><FIM_DA_LINHA><EOF>
 }
-void corpo() : {}
+void corpo(List<Comando> lista) : {}
 {
-    (dvar())* (comandos())*
+    (dvar())* (comandos(lista))*
+     {
+      System.out.println(lista);
+   }
 }
 void dvar() : { }
 {
 	<VAR><FIM_DA_LINHA> (criar_var())+ <ENDAVAR><FIM_DA_LINHA>
 }
 
-void criar_var() : { }
+void criar_var() : { char tp; }
 {
-  tipo() <ID>(<VIRGULA> <ID>)* <FIM_DA_LINHA>
+  (<TIPO_NUMERICO> {tp='n';} | <TIPO_TEXTO> {tp='s';} ) itemListaVar(tp)(<VIRGULA> itemListaVar(tp))* <FIM_DA_LINHA>
 }
-void tipo() : { }
+void itemListaVar(char tp) : {Simbolo simb; Token t; Expressao expressao; boolean tipoCerto;}
 {
-    <TIPO_NUMERICO>  | <TIPO_TEXTO>
-}
-void comandos() : { }
-{
-    attr() | IsTrue()  | print() | loop()
-}
-void attr() : { }
-{
-    <ID><ATTR>(exp() | read())<FIM_DA_LINHA>
-}
-void exp() : { }
-{
-    expAuxiliar()
+    t=<ID>
+	{
+		if(tab.isExiste(t.image))
+			System.err.println("ERRO!\n Erro Semântico: A váriavel \"" + t.image + "\" foi declarada mais de uma vez\n");
+		else{
+			simb = new Simbolo(t.image, tp);
+			tab.inclui(simb);
+		}	
+	}
+	
+	(
+		<ATTR> expressao = exp()
+		{
+			if(tp == 'n')
+				tipoCerto = expressao.isExpressaoNumerica(tab);
+			else
+				tipoCerto = expressao.isExpressaoTexto();
+		
+			if(!tipoCerto)
+				System.err.println("ERRO!\n Erro Semântico: O tipo da variavel \"" + t.image + "\" não é compatível com a expressão atribuida"+"\n");
+						
+		}
+		{
+			tab.inicializaIdent(t.image);
+	    }		
+	)?
 }
 
-void expAuxiliar() : {}
+void comandos(List<Comando> lista) : { Comando comando = new Comando('A');Token t; Expressao expressao; boolean tipoCerto; boolean foiDeclarada=true; }
 {
-	termo()
+    attr(lista) | IsTrue(lista)  | print(lista) | loop(lista)
+}
+void attr(List<Comando> lista) : {Comando comando = new Comando('A');Token t; Expressao expressao; boolean tipoCerto; boolean foiDeclarada=true;} 
+{
+  t=<ID>
+	{comando.setRef1(t.image);}
+	{// Ação semãntica para verificar se variavel foi declarada 
+		if(!tab.isExiste(t.image)){
+			System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi declarada\n");
+			foiDeclarada = false;
+		}	
+	}
+	
+	<ATTR> 
+	
+	( expressao = exp()
+	{
+		comando.setRef2(expressao);
+	}
+	{//Ação semântica para verificar se a váriavel está recebendo uma expressão compatível com seu tipo	
+		if(foiDeclarada){
+			if(tab.getSimbolo(t.image).getTipo() == 'n')
+				tipoCerto = expressao.isExpressaoNumerica(tab);
+			else
+				tipoCerto = expressao.isExpressaoTexto();
+		
+			if(!tipoCerto)
+		    	System.err.println("ERRO!\n Erro Semântico: O tipo da variavel \"" + t.image + "\" não é compatível com a expressão atribuida"+"\n");
+		}    
+	}
+	{
+		tab.inicializaIdent(t.image);
+		lista.add(comando);
+	}
+	| read(lista)
+	
+	{
+		tab.inicializaIdent(t.image);
+		lista.add(comando);
+		
+	}
+	
+	  )*
+	
+	
+	 <FIM_DA_LINHA>
+	
+}
+Expressao exp() : {Expressao listaExp = new Expressao();}
+{
+    expAuxiliar(listaExp)
+	{return listaExp;}
+}
+
+void expAuxiliar(Expressao listaExp) : {}
+{
+	termo(listaExp)
 }	
 
-void termo() : {}
+void termo(Expressao listaExp) : {Token t; Item item;}
 {
-	termo1()(<OR> termo1())*	
+	termo1(listaExp) 
+	(
+		 t=<OR> termo1(listaExp)
+		 {
+		 	item = new Item('o', t.image);
+		 	listaExp.inclui(item);
+		 }
+	)*
 }
 
-void termo1() : {}
+void termo1(Expressao listaExp) : {Token t; Item item;}
 {
-	termo2()(<AND> termo2())*
+	termo2(listaExp) 
+	( 
+		t=<AND> termo2(listaExp)
+		{
+			item = new Item('o', t.image);
+		 	listaExp.inclui(item);
+		}
+	)*
 }
 
-void termo2() : {}
+void termo2(Expressao listaExp) : {Token t; Item item;}
 {
-	termo3()((<MAIOR> | <MENOR> | <MAIORIGUAL> | <MENORIGUAL> | <DIFERENTE> | <IGUAL> | <CONCATENAR>) termo3())*
+	termo3(listaExp) 
+	 ( 
+	 	(t=<MAIOR> | t=<MENOR> | t=<MAIORIGUAL> | t=<MENORIGUAL> | t=<DIFERENTE> | t=<IGUAL> | t=<CONCATENAR>) 
+	     termo3(listaExp)
+	 	{
+	 		item = new Item('o', t.image);
+		 	listaExp.inclui(item);
+	 	}
+	 )*
+}
+void termo3(Expressao listaExp) : {Token t; Item item; }
+{
+	termo4(listaExp) 
+	( 
+		t=<SOMA> termo4(listaExp)
+		{
+			if(!listaExp.otimizaExpressao('+') && !listaExp.otimizaString()){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}
+		}	
+		
+		| 
+		
+		t=<SUB> termo4(listaExp)
+		{
+			if(!listaExp.otimizaExpressao('-')){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}
+    		
+		}
+	)*
 }
 
-void termo3() : {}
+void termo4(Expressao listaExp) : {Token t; Item item;}
 {
-	termo4()( <SOMA> termo4()| <SUB> termo4())*
+	termo5(listaExp) 
+	(
+		 
+		  t=<MULTI> termo5(listaExp)
+		  {
+		  	if(!listaExp.otimizaExpressao('*')){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}
+		  }
+		   
+		 |
+		 
+		  t=<DIVISAO> termo5(listaExp)
+		 {
+		 	if(!listaExp.otimizaExpressao('/')){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}
+		 }
+	)*
 }
 
-void termo4() : {}
+void termo5(Expressao listaExp) : {Token t; Item item;}
 {
-	termo5()( <MULTI> termo5()| <DIVISAO> termo5())*
+	termo6(listaExp) 
+	( 
+		t=<POTENCIA> termo6(listaExp) 
+		{
+			if(!listaExp.otimizaExpressao('^')){
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+			}	
+		}
+	)* 
 }
 
-void termo5() : {}
+void termo6(Expressao listaExp) : {Token t=null; Item item; int cont_OP_NOT=0;}
 {
-	termo6()( <POTENCIA> termo6())*
+	( t=<NOT> {cont_OP_NOT++;})* termo7(listaExp)
+	{
+		if(t != null && (cont_OP_NOT % 2 != 0)){
+			item = new Item('o', t.image);
+			listaExp.inclui(item);
+		}	
+	}
 }
 
-void termo6() : {}
+void termo7(Expressao listaExp) : {Token t; Item item;}
 {
-	(<NOT>)* termo7()
+	( t=<CONCATENAR>
+		{
+				item = new Item('o', t.image);
+				listaExp.inclui(item);	
+		}
+	)*  termo8(listaExp)
+		
+	
 }
-
-void termo7() : {}
+void termo8(Expressao listaExp) : {Token t, t_aux=null; Item item; String num;}
 {
-	(<CONCATENAR>)* termo8()
+	  
+	  (t_aux=<SUB> | t_aux=<SOMA>)? (t=<TIPO_INTEGRAL> | t=<TIPO_DECIMAL>)
+	  {
+	  	if(t_aux != null)
+	  		num = t_aux.image + t.image;
+	  	else	
+	  		num = t.image;
+	    item = new Item('n', num);
+        listaExp.inclui(item);
+	  }
+	  
+	|
+	
+	 t=<ID>
+	  {
+		if(!tab.isExiste(t.image))
+			System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi declarada\n");
+	  }
+	  {
+	  	if(!tab.foiInicializado(t.image))
+	  		System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi inicializada\n");
+	  }
+	  {
+		item = new Item('v', t.image);
+       	listaExp.inclui(item);	
+      }	 
+      
+	| 
+	
+	 t=<TEXTO>
+	 {
+		item = new Item('s', t.image);
+       	listaExp.inclui(item);	
+	 }
+	 
+	| 
+	 //O expAuxiliar existe pois: Cada vez que ocorrer um parênteses na expressão, o exp será 
+	 //chamado e será criada uma nova lista precisando assim concatena-la a lista "principal" para formar só uma lista
+	 <ABRE_PARENTESES> expAuxiliar(listaExp) <FECHA_PARENTESES>
 }
-void termo8() : {}
+void IsTrue(List<Comando> lista) : {LinkedList<Comando> listaSe = new LinkedList<Comando>();Comando se = new Comando('S');Expressao expressao;}
 {
-	(<SUB> |<SOMA>)? (<TIPO_INTEGRAL> | < TIPO_DECIMAL>	| <ID>	|<TEXTO>| <ABRE_PARENTESES> expAuxiliar() <FECHA_PARENTESES>)+
-}
-void IsTrue() : {}
-{
-	<IF> <ABRE_PARENTESES> exp() <FECHA_PARENTESES> <ABRE_CHAVE>(comandos())* <FECHA_CHAVE>(IsNot())?
+	<IF> <ABRE_PARENTESES>
+	
+	expressao = exp() 
+	
+	{
+	 se.setRef1(expressao);
+	 
+	//Verifica se a expressao utilizada na condicao é compativel
+	if(!expressao.isExpressaoCondicional(tab))
+		System.err.println("ERRO!\n Erro Semântico: A condição utilizada na estrutura se(){} não é compatível\n");
+	}
+	
+	
+	<FECHA_PARENTESES>
+	<ABRE_CHAVE>
+	(
+		comandos(listaSe)
+	)*
+	  
+	{
+		se.setRef2(listaSe);
+	}
+	<FECHA_CHAVE>
+	( IsNot(lista,se) )?
+	
+	{
+		lista.add(se);
+	}
 }
 	     		
-void IsNot() : {}
+void IsNot(List<Comando> lista,Comando se) : {LinkedList<Comando> listaSenao = new LinkedList<Comando>();}
 {
-	<ELSE> <ABRE_CHAVE>(comandos())*<FECHA_CHAVE>
+	<ELSE>
+	 <ABRE_CHAVE>
+	(
+		comandos(listaSenao)
+	)*
+	  
+	{
+		se.setRef3(listaSenao);
+	} 
+	  
+	<FECHA_CHAVE>
 }
-void read() : { }
+
+void read(List<Comando> lista) : {}
 {
-    <READ> <ABRE_PARENTESES> corpoEntrada()<FECHA_PARENTESES>
+	<READ> <ABRE_PARENTESES> corpoEntrada(lista)<FECHA_PARENTESES>
 }
-void corpoEntrada() : { }
+void corpoEntrada(List<Comando> lista) : {Comando comandoImprime = new Comando('I');Comando comandoLeia = new Comando('L');Token t;}
 {
-    (<TEXTO> )?
+	 (t=<TEXTO> (<VIRGULA>)?
+	   {
+	   	 comandoImprime.setRef1(t.image);
+	   	 lista.add(comandoImprime);
+	   }
+	 )?
+
 }
-void print() : { }
+
+void print(List<Comando> lista) : {Expressao expressao;}
 {
-   <PRINT> <ABRE_PARENTESES> corpoMostra() <FECHA_PARENTESES> <FIM_DA_LINHA>
+	<PRINT> <ABRE_PARENTESES> corpoMostra(lista) <FECHA_PARENTESES> <FIM_DA_LINHA>
 }
-void corpoMostra() : {}
+void corpoMostra(List<Comando> lista) : {Expressao expressao;Comando comandoExibe = new Comando('I');Token t;}
 {	
-	(<TEXTO> | < ID >)+ ( <CONCATENAR> exp())?
+   (t=<TEXTO> <CONCATENAR> 
+        {
+           comandoExibe.setRef1(t.image);
+   	       lista.add(comandoExibe);
+        }
+    )?
+   
+    expressao = exp()
+	    
+    {
+		if(!expressao.isExpressaoTexto())
+			System.err.println("ERRO!\n Erro Semântico: A expressão utilizada na estrutura exibe() não é compatível\n");
+	   	 
+	   	comandoExibe.setRef1(expressao);
+	   	lista.add(comandoExibe);
+	}
 }
-void loop() : { }
+
+void loop(List<Comando> lista) : {LinkedList<Comando> listaEnquanto = new LinkedList<Comando>();Comando enquanto = new Comando('E');Expressao expressao;}
 {
-    <REPEAT> <ABRE_PARENTESES>exp()<FECHA_PARENTESES> <ABRE_CHAVE>(comandos())*<FECHA_CHAVE>
+	 <REPEAT> <ABRE_PARENTESES> 
+	 
+	  expressao = exp()
+	  
+	 {
+	 	enquanto.setRef1(expressao);
+
+		//Verifica se a expressao utilizada na condicao é compativel
+		if(!expressao.isExpressaoCondicional(tab))
+			System.err.println("ERRO!\n Erro Semântico: A condição utilizada na estrutura enquanto(){} não é compatível\n");
+	 }	 
+	 <FECHA_PARENTESES>
+	<ABRE_CHAVE>
+	  (
+	    comandos(listaEnquanto)  
+	  )*
+	  
+	  {
+	  	enquanto.setRef2(listaEnquanto);
+	  	lista.add(enquanto);
+	  }
+
+	 <FECHA_CHAVE>
 }
