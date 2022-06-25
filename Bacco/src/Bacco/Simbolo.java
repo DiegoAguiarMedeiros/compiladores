@@ -7,11 +7,12 @@ public class Simbolo {
 	private char tipo;        // tipo da variável
 	private int referencia;   // é uma referência usada na geração do código destino
 	private static int marcador = 1; // armazena a última referência incluída na tabela
-
-	public Simbolo(String image, char tp) {
+	private boolean inicializada = false;
+	public Simbolo(String image, char tp, boolean inicializada) {
 		// TODO Auto-generated constructor stub
 		this.nome = image;
 		this.tipo = tp;
+		this.inicializada = inicializada;
 	}
 
 	public String toString() {
@@ -35,6 +36,13 @@ public class Simbolo {
 		this.tipo = tipo;
 	}
 	
+	public void setInicializada(Boolean inicializada) {
+		this.inicializada = inicializada;
+	}
+	public boolean getInicializada() {
+		return this.inicializada;
+	}
+	
 	public void setNome(String nome) {
 		this.nome = nome;
 	}
@@ -43,8 +51,5 @@ public class Simbolo {
 		this.referencia = referencia;
 	}
 	
-//	public static int setMarcador(int num){
-//		this.marcador = this.marcador + num;
-//	}
 
 }

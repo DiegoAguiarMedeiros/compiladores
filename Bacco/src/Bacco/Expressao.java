@@ -209,7 +209,7 @@ public class Expressao implements Serializable {
 
 		for(int i=0; i<nElem; i++){//Percorre a lista
 			item = this.get(i);
-
+			//System.err.println(item.getTipo());
 			if( item.getTipo() == 'v' ){// Se for váriavel do tipo string retorna false
 				simb = tab.getSimbolo(item.getValor());
 
@@ -246,7 +246,7 @@ public class Expressao implements Serializable {
 			if( item.getTipo() == 'o'){//Se tiver algum operador diferente de + retorna false
 				op = item.getValor();
 
-				if(op != "+")
+				if(op != "#")
 					return false;
 			}
 		}

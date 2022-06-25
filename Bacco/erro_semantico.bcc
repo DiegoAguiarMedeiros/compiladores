@@ -1,0 +1,23 @@
+Start;
+   :-- Programa com erros semânticos --:
+Var;
+   number a, b, c, d;
+   text  x, y, z;
+   
+EndVar;
+
+  b = a + 5 + c;         @ erro: variável c não inicializada
+
+  d = d + 1;             @ erro: variável d não inicializada
+
+  c = a + "fim";         @ erro: incompatibilidade de tipos na expressão
+
+   a = "texto" + x;      @ erro: incompatibilidade de tipos na atribuição
+
+   print( y # "palavra");  @ erro: variável y não inicializada
+
+   y = x + z + a;         @ erro: incompatibilidade de tipos na expressão
+
+   z = "a" * "b";         @ erro: operador incompatível
+      
+End;

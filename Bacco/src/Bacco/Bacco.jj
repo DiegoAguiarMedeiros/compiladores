@@ -27,10 +27,10 @@ public class Bacco
 
       try {
 
-         Bacco analisador = new Bacco(new FileInputStream("exemplo5.bcc"));
+         Bacco analisador = new Bacco(new FileInputStream("erro_semantico.bcc"));
 
          analisador.inicio(listaComando);
-                         System.out.println("\u005cnTabela de Simbolos (Variaveis): \u005cn\u005cn"+tab.toString());
+                         //System.out.println("\u005cnTabela de Simbolos (Variaveis): \u005cn\u005cn"+tab.toString());
          // System.out.println(tab.toString());
 
       }
@@ -146,7 +146,7 @@ JAVACODE void S()
 
       t = getNextToken();
 
-      System.out.println(tokenImage[t.kind]+"\t"+t.image);
+      //System.out.println(tokenImage[t.kind]+"\t"+t.image);
 
    }
 
@@ -162,7 +162,7 @@ void corpo(List<Comando> lista) : {}
 {
     (dvar())* (comandos(lista))*
      {
-      System.out.println(lista);
+      //System.out.println(lista);
    }
 }
 void dvar() : { }
@@ -177,28 +177,30 @@ void criar_var() : { char tp; }
 void itemListaVar(char tp) : {Simbolo simb; Token t; Expressao expressao; boolean tipoCerto;}
 {
     t=<ID>
-	{
+	{//acao semantica para verificar se variavel ta sendo declarada pela segunda vez
 		if(tab.isExiste(t.image))
 			System.err.println("ERRO!\n Erro Semântico: A váriavel \"" + t.image + "\" foi declarada mais de uma vez\n");
 		else{
-			simb = new Simbolo(t.image, tp);
+			simb = new Simbolo(t.image, tp ,false);
 			tab.inclui(simb);
 		}	
 	}
-	
+	// Variavel pode ser inicializada ou não
 	(
 		<ATTR> expressao = exp()
-		{
+		{//Ação semântica para verificar se a variavel esta recebendo uma expressão compativel com seu tipo
+
+		
 			if(tp == 'n')
 				tipoCerto = expressao.isExpressaoNumerica(tab);
 			else
 				tipoCerto = expressao.isExpressaoTexto();
 		
 			if(!tipoCerto)
-				System.err.println("ERRO!\n Erro Semântico: O tipo da variavel \"" + t.image + "\" não é compatível com a expressão atribuida"+"\n");
+				System.err.println("ERRO!\n Erro Semântico: O tipo da variavel \"" + t.image + "\" não é compatível com a expressão atribuida ");
 						
 		}
-		{
+		{// Açãoo semantica para incluir na tabela que variavel foi inicializada
 			tab.inicializaIdent(t.image);
 	    }		
 	)?
@@ -233,7 +235,7 @@ void attr(List<Comando> lista) : {Comando comando = new Comando('A');Token t; Ex
 				tipoCerto = expressao.isExpressaoTexto();
 		
 			if(!tipoCerto)
-		    	System.err.println("ERRO!\n Erro Semântico: O tipo da variavel \"" + t.image + "\" não é compatível com a expressão atribuida"+"\n");
+		    	System.err.println("ERRO!\n Erro Semântico: O tipo da variavel \"" + t.image + "\" não é compatível com a expressão atribuida  "+"\n");
 		}    
 	}
 	{
@@ -404,10 +406,12 @@ void termo8(Expressao listaExp) : {Token t, t_aux=null; Item item; String num;}
 	
 	 t=<ID>
 	  {
+
 		if(!tab.isExiste(t.image))
 			System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi declarada\n");
 	  }
 	  {
+
 	  	if(!tab.foiInicializado(t.image))
 	  		System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi inicializada\n");
 	  }
@@ -440,7 +444,7 @@ void IsTrue(List<Comando> lista) : {LinkedList<Comando> listaSe = new LinkedList
 	 
 	//Verifica se a expressao utilizada na condicao é compativel
 	if(!expressao.isExpressaoCondicional(tab))
-		System.err.println("ERRO!\n Erro Semântico: A condição utilizada na estrutura se(){} não é compatível\n");
+		System.err.println("ERRO!\n Erro Semântico: A condição utilizada na estrutura IsTrue(){} não é compatível\n");
 	}
 	
 	
@@ -508,7 +512,7 @@ void corpoMostra(List<Comando> lista) : {Expressao expressao;Comando comandoExib
 	    
     {
 		if(!expressao.isExpressaoTexto())
-			System.err.println("ERRO!\n Erro Semântico: A expressão utilizada na estrutura exibe() não é compatível\n");
+			System.err.println("ERRO!\n Erro Semântico: A expressão utilizada na estrutura print() não é compatível\n");
 	   	 
 	   	comandoExibe.setRef1(expressao);
 	   	lista.add(comandoExibe);

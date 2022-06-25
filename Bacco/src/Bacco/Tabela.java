@@ -57,7 +57,7 @@ public class Tabela {
 
       else {
 
-    	  Simbolo simbolo = new Simbolo(image,'s');
+    	  Simbolo simbolo = new Simbolo(image,'s',true);
     	  
             this.tab.put(image,simbolo);
 
@@ -69,7 +69,7 @@ public class Tabela {
 
 	public boolean foiInicializado(String image) {
 		// TODO Auto-generated method stub
-		return this.tab.containsKey(image);
+		return ((Simbolo)this.tab.get(image)).getInicializada();
 	}
 
 	

@@ -18,10 +18,10 @@ public class Bacco implements BaccoConstants {
 
       try {
 
-         Bacco analisador = new Bacco(new FileInputStream("exemplo5.bcc"));
+         Bacco analisador = new Bacco(new FileInputStream("erro_semantico.bcc"));
 
          analisador.inicio(listaComando);
-                         System.out.println("\u005cnTabela de Simbolos (Variaveis): \u005cn\u005cn"+tab.toString());
+                         //System.out.println("\nTabela de Simbolos (Variaveis): \n\n"+tab.toString());
          // System.out.println(tab.toString());
 
       }
@@ -53,7 +53,7 @@ public class Bacco implements BaccoConstants {
 
       t = getNextToken();
 
-      System.out.println(tokenImage[t.kind]+"\u005ct"+t.image);
+      //System.out.println(tokenImage[t.kind]+"\t"+t.image);
 
    }
 
@@ -97,7 +97,7 @@ public class Bacco implements BaccoConstants {
       }
       comandos(lista);
     }
-      System.out.println(lista);
+
   }
 
   static final public void dvar() throws ParseException {
@@ -156,23 +156,28 @@ public class Bacco implements BaccoConstants {
   static final public void itemListaVar(char tp) throws ParseException {
                               Simbolo simb; Token t; Expressao expressao; boolean tipoCerto;
     t = jj_consume_token(ID);
+         //acao semantica para verificar se variavel ta sendo declarada pela segunda vez
                 if(tab.isExiste(t.image))
                         System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: A v\u00e1riavel \u005c"" + t.image + "\u005c" foi declarada mais de uma vez\u005cn");
                 else{
-                        simb = new Simbolo(t.image, tp);
+                        simb = new Simbolo(t.image, tp ,false);
                         tab.inclui(simb);
                 }
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case ATTR:
       jj_consume_token(ATTR);
       expressao = exp();
+                 //Ação semântica para verificar se a variavel esta recebendo uma expressão compativel com seu tipo
+
+
                         if(tp == 'n')
                                 tipoCerto = expressao.isExpressaoNumerica(tab);
                         else
                                 tipoCerto = expressao.isExpressaoTexto();
 
                         if(!tipoCerto)
-                                System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: O tipo da variavel \u005c"" + t.image + "\u005c" n\u00e3o \u00e9 compat\u00edvel com a express\u00e3o atribuida"+"\u005cn");
+                                System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: O tipo da variavel \u005c"" + t.image + "\u005c" n\u00e3o \u00e9 compat\u00edvel com a express\u00e3o atribuida ");
+                 // Açãoo semantica para incluir na tabela que variavel foi inicializada
                         tab.inicializaIdent(t.image);
       break;
     default:
@@ -252,7 +257,7 @@ public class Bacco implements BaccoConstants {
                                 tipoCerto = expressao.isExpressaoTexto();
 
                         if(!tipoCerto)
-                        System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: O tipo da variavel \u005c"" + t.image + "\u005c" n\u00e3o \u00e9 compat\u00edvel com a express\u00e3o atribuida"+"\u005cn");
+                        System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: O tipo da variavel \u005c"" + t.image + "\u005c" n\u00e3o \u00e9 compat\u00edvel com a express\u00e3o atribuida  "+"\u005cn");
                 }
                 tab.inicializaIdent(t.image);
                 lista.add(comando);
@@ -596,7 +601,7 @@ public class Bacco implements BaccoConstants {
 
         //Verifica se a expressao utilizada na condicao é compativel
         if(!expressao.isExpressaoCondicional(tab))
-                System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: A condi\u00e7\u00e3o utilizada na estrutura se(){} n\u00e3o \u00e9 compat\u00edvel\u005cn");
+                System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: A condi\u00e7\u00e3o utilizada na estrutura IsTrue(){} n\u00e3o \u00e9 compat\u00edvel\u005cn");
     jj_consume_token(FECHA_PARENTESES);
     jj_consume_token(ABRE_CHAVE);
     label_14:
@@ -703,7 +708,7 @@ public class Bacco implements BaccoConstants {
     }
     expressao = exp();
                 if(!expressao.isExpressaoTexto())
-                        System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: A express\u00e3o utilizada na estrutura exibe() n\u00e3o \u00e9 compat\u00edvel\u005cn");
+                        System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: A express\u00e3o utilizada na estrutura print() n\u00e3o \u00e9 compat\u00edvel\u005cn");
 
                 comandoExibe.setRef1(expressao);
                 lista.add(comandoExibe);
