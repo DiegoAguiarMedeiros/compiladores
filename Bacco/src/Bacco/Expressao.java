@@ -2,33 +2,25 @@ package Bacco;
 import java.io.Serializable;
 import java.util.LinkedList;
 
-
 public class Expressao implements Serializable {
 
 	private LinkedList<Item> listaExp;
 
 	public Expressao() {
-
 		this.listaExp = new LinkedList<Item>();
-
 	}
 
 	public void inclui(Item item) {
-
 		this.listaExp.add(item);
 	}
 
 	public LinkedList<Item> getLista() {
-
 		return this.listaExp;   	  
-
 	}
 
 	public boolean otimizaExpressao(char operacao){
 		Item item;
 		double res, a, b;
-		// listaExp.getLast().getTipo() -> ultimo elemento da lista
-		// listaExp.get(listaExp.size() - 2).getTipo() -> penultimo elemento da lista
 		if(listaExp.getLast().getTipo() == 'n' && listaExp.get(listaExp.size() - 2).getTipo() == 'n'){
 			b=Double.parseDouble(listaExp.removeLast().getValor());
 			a=Double.parseDouble(listaExp.removeLast().getValor());
@@ -274,11 +266,8 @@ public class Expressao implements Serializable {
 			}
 			else if( item.getTipo() == 's' )// Se tiver alguma string retorna false
 				return false;
-
 		}
-
 		return true;
-
 	}
 
 	public Item get(int n){
@@ -286,9 +275,7 @@ public class Expressao implements Serializable {
 	}
 
 	public String toString() {
-
 		return this.listaExp.toString();
-
 	}
 
 }

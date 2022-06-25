@@ -2,7 +2,6 @@ package Bacco;
 
 import java.io.Serializable;
 
-
 public class Item implements Serializable {
 
 	private char tipo; // pode ser 'n' (número), 's' (string), 'v' (variável) ou 'o' (operador).
@@ -29,6 +28,4 @@ public class Item implements Serializable {
 	public String toString() {
 		return ("Tipo: " + this.getTipo() + "\nValor: " + this.getValor());
 	}
-
-
 }
