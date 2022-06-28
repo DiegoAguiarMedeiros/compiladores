@@ -167,7 +167,7 @@ void corpo(List<Comando> lista) : {}
 }
 void dvar() : { }
 {
-	<VAR><FIM_DA_LINHA> (criar_var())+ <ENDAVAR><FIM_DA_LINHA>
+	<VAR><FIM_DA_LINHA> criar_var (<VIRGULA> criar_var)* <ENDVAR> <FIM_DA_LINHA> 
 }
 
 void criar_var() : { char tp; }

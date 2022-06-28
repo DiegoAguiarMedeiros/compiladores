@@ -2,21 +2,15 @@ Inicio → <Start> <FIM_DA_LINHA> (corpo)+ <End> <FIM_DA_LINHA> <EOF>
 
 corpo → (dvar)* (comandos)*
 
-dvar → <Var><FIM_DA_LINHA> declaVar (virgula declaVar)* <EndVar> <FIM_DA_LINHA> 
+dvar → <VAR><FIM_DA_LINHA> criar_var (<VIRGULA> criar_var)* <ENDVAR> <FIM_DA_LINHA>  
 
-declaVar →  (criar_var)+
+declaVar →  (<TIPO_NUMERICO> | <TIPO_TEXTO> ) itemListaVar()(<VIRGULA> itemListaVar())* <FIM_DA_LINHA>
 
-criar_var →  tipo <id>(virgula <id>)* <FIM_DA_LINHA>
-
-tipo → tipoNumerico | tipoTexto
-
-tipoNumerico → <number>
-
-tipoTexto → <text>
+itemListaVar →  <ID> (<ATTR> exp())?
 
 comandos → attr | cond | read | print | loop 
 
-attr → <id> <=> (exp | read )? <FIM_DA_LINHA>
+attr → <id> <=> (exp | read )* <FIM_DA_LINHA>
 
 exp → expAuxiliar
 
@@ -36,17 +30,9 @@ termo5 -> termo6 (<POTENCIA> termo6 )*
 
 termo6 -> (NOT)* termo7
 
-termo6 -> <CONCATENAR> termo8
+termo6 -> (<CONCATENAR>)* termo8
 
 termo8 -> (<MENOS> |<MAIS>)? <NUMEROS>	|	 <VARIAVEIS>	| 	 <TIPO_TEXTO>	| 	 <ABRE_PARENTESES> expAuxiliar <FECHA_PARENTESES>
-
-numero → tipoIntegral | tipoDecimal
-
-tipoIntegral → (["0"-"9"])+
-
-tipoDecimal → (["0"-"9"])*(".")?(["0"-"9"])+
-
-texto → ["a"-"z","A"-"Z"](["0"-"9"]|["a"-"z","A"-"Z"])*
 
 IsTrue → <IF> <ABRE_PARENTESES> exp <FECHA_PARENTESES> <ABRE_CHAVE>(comandos)* <FECHA_CHAVE>(IsNot)?
 
