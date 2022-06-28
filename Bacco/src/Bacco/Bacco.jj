@@ -238,13 +238,13 @@ void attr(List<Comando> lista) : {Comando comando = new Comando('A');Token t; Ex
 		    	System.err.println("ERRO!\n Erro Semântico: O tipo da variavel \"" + t.image + "\" não é compatível com a expressão atribuida  "+"\n");
 		}    
 	}
-	{
+	{//Ação semântica para incluir na tabela que variavel foi inicializada
 		tab.inicializaIdent(t.image);
 		lista.add(comando);
 	}
 	| read(lista)
 	
-	{
+	{//Ação semântica para incluir na tabela que variavel foi inicializada
 		tab.inicializaIdent(t.image);
 		lista.add(comando);
 		
@@ -256,6 +256,7 @@ void attr(List<Comando> lista) : {Comando comando = new Comando('A');Token t; Ex
 	 <FIM_DA_LINHA>
 	
 }
+//O mesmo exp é usado para todos os comandos - A incompatibilidade de tipos será verificada depois
 Expressao exp() : {Expressao listaExp = new Expressao();}
 {
     expAuxiliar(listaExp)
@@ -269,10 +270,13 @@ void expAuxiliar(Expressao listaExp) : {}
 
 void termo(Expressao listaExp) : {Token t; Item item;}
 {
+  // A listaExp é usada para armazenar uma expressao no formato pós-fixo
+	// O roteiro (9.3) sugere um linkedList local sendo passado para os outros mêtodos e sugere que encapsule o linkedList
+	// como foi feito com a classe Expressao
 	termo1(listaExp) 
 	(
 		 t=<OR> termo1(listaExp)
-		 {
+		 {//Depois que os dois termos da operação foram armazenados na lista, ent�o o operador é armazenado
 		 	item = new Item('o', t.image);
 		 	listaExp.inclui(item);
 		 }
@@ -308,7 +312,9 @@ void termo3(Expressao listaExp) : {Token t; Item item; }
 	termo4(listaExp) 
 	( 
 		t=<SOMA> termo4(listaExp)
-		{
+		{//Seção 9.5 - Otimiza a expressao (otimizaExp é para calculos envolvendo constantes (5+4+a==9+a), 
+		 //tambem é verificado a existencia de elementos neutro e tem o adicional de otimizacao de string("ab"+"c"="abc"))
+		 //O operador só será inserido se não for possivel nenhuma das otimizações 
 			if(!listaExp.otimizaExpressao('+') && !listaExp.otimizaString()){
 				item = new Item('o', t.image);
 				listaExp.inclui(item);	
@@ -357,7 +363,7 @@ void termo5(Expressao listaExp) : {Token t; Item item;}
 {
 	termo6(listaExp) 
 	( 
-		t=<POTENCIA> termo6(listaExp) 
+		t=<POTENCIA> termo6(listaExp) //Forma que encontrei para ser avaliado da direita para esquerda 
 		{
 			if(!listaExp.otimizaExpressao('^')){
 				item = new Item('o', t.image);
@@ -370,7 +376,7 @@ void termo5(Expressao listaExp) : {Token t; Item item;}
 void termo6(Expressao listaExp) : {Token t=null; Item item; int cont_OP_NOT=0;}
 {
 	( t=<NOT> {cont_OP_NOT++;})* termo7(listaExp)
-	{
+	{// Se não tiver nenhum operador not não tem nehum operador a armazenar
 		if(t != null && (cont_OP_NOT % 2 != 0)){
 			item = new Item('o', t.image);
 			listaExp.inclui(item);
@@ -381,7 +387,7 @@ void termo6(Expressao listaExp) : {Token t=null; Item item; int cont_OP_NOT=0;}
 void termo7(Expressao listaExp) : {Token t; Item item;}
 {
 	( t=<CONCATENAR>
-		{
+		{// Se não tiver nenhum operador concatenar não tem nehum operador a armazenar
 				item = new Item('o', t.image);
 				listaExp.inclui(item);	
 		}
@@ -391,9 +397,9 @@ void termo7(Expressao listaExp) : {Token t; Item item;}
 }
 void termo8(Expressao listaExp) : {Token t, t_aux=null; Item item; String num;}
 {
-	  
+	  //t_aux é usado para concatenar um op_adi com um numero e assim armazena-lo em num para inserir na lista 	(exemplo: +2)
 	  (t_aux=<SUB> | t_aux=<SOMA>)? (t=<TIPO_INTEGRAL> | t=<TIPO_DECIMAL>)
-	  {
+	  {// t_aux pode não ter pois é opicional o sinal a frente do numero
 	  	if(t_aux != null)
 	  		num = t_aux.image + t.image;
 	  	else	
@@ -405,21 +411,17 @@ void termo8(Expressao listaExp) : {Token t, t_aux=null; Item item; String num;}
 	|
 	
 	 t=<ID>
-	  {
+	  {// Verifica se foi declarado
 
 		if(!tab.isExiste(t.image))
 			System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi declarada\n");
 	  }
-	  {
+	  {//Verifica se foi inicializado
 
 	  	if(!tab.foiInicializado(t.image))
 	  		System.err.println("ERRO!\n Erro Semantico: A váriavel \"" + t.image + "\" não foi inicializada\n");
 	  }
-	  {
-		item = new Item('v', t.image);
-       	listaExp.inclui(item);	
-      }	 
-      
+	        
 	| 
 	
 	 t=<TEXTO>

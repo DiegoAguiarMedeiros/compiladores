@@ -259,11 +259,13 @@ public class Bacco implements BaccoConstants {
                         if(!tipoCerto)
                         System.err.println("ERRO!\u005cn Erro Sem\u00e2ntico: O tipo da variavel \u005c"" + t.image + "\u005c" n\u00e3o \u00e9 compat\u00edvel com a express\u00e3o atribuida  "+"\u005cn");
                 }
+         //Ação semântica para incluir na tabela que variavel foi inicializada
                 tab.inicializaIdent(t.image);
                 lista.add(comando);
         break;
       case READ:
         read(lista);
+         //Ação semântica para incluir na tabela que variavel foi inicializada
                 tab.inicializaIdent(t.image);
                 lista.add(comando);
         break;
@@ -276,6 +278,7 @@ public class Bacco implements BaccoConstants {
     jj_consume_token(FIM_DA_LINHA);
   }
 
+//O mesmo exp é usado para todos os comandos - A incompatibilidade de tipos será verificada depois
   static final public Expressao exp() throws ParseException {
                    Expressao listaExp = new Expressao();
     expAuxiliar(listaExp);
@@ -302,6 +305,7 @@ public class Bacco implements BaccoConstants {
       }
       t = jj_consume_token(OR);
       termo1(listaExp);
+                  //Depois que os dois termos da operação foram armazenados na lista, ent�o o operador é armazenado
                         item = new Item('o', t.image);
                         listaExp.inclui(item);
     }
@@ -397,6 +401,9 @@ public class Bacco implements BaccoConstants {
       case SOMA:
         t = jj_consume_token(SOMA);
         termo4(listaExp);
+                 //Seção 9.5 - Otimiza a expressao (otimizaExp é para calculos envolvendo constantes (5+4+a==9+a), 
+                 //tambem é verificado a existencia de elementos neutro e tem o adicional de otimizacao de string("ab"+"c"="abc"))
+                 //O operador só será inserido se não for possivel nenhuma das otimizações 
                         if(!listaExp.otimizaExpressao('+') && !listaExp.otimizaString()){
                                 item = new Item('o', t.image);
                                 listaExp.inclui(item);
@@ -495,6 +502,7 @@ public class Bacco implements BaccoConstants {
                    cont_OP_NOT++;
     }
     termo7(listaExp);
+         // Se não tiver nenhum operador not não tem nehum operador a armazenar
                 if(t != null && (cont_OP_NOT % 2 != 0)){
                         item = new Item('o', t.image);
                         listaExp.inclui(item);
@@ -514,6 +522,7 @@ public class Bacco implements BaccoConstants {
         break label_13;
       }
       t = jj_consume_token(CONCATENAR);
+                 // Se não tiver nenhum operador concatenar não tem nehum operador a armazenar
                                 item = new Item('o', t.image);
                                 listaExp.inclui(item);
     }
@@ -559,6 +568,7 @@ public class Bacco implements BaccoConstants {
         jj_consume_token(-1);
         throw new ParseException();
       }
+           // t_aux pode não ter pois é opicional o sinal a frente do numero
                 if(t_aux != null)
                         num = t_aux.image + t.image;
                 else
@@ -568,12 +578,14 @@ public class Bacco implements BaccoConstants {
       break;
     case ID:
       t = jj_consume_token(ID);
+           // Verifica se foi declarado
+
                 if(!tab.isExiste(t.image))
                         System.err.println("ERRO!\u005cn Erro Semantico: A v\u00e1riavel \u005c"" + t.image + "\u005c" n\u00e3o foi declarada\u005cn");
+           //Verifica se foi inicializado
+
                 if(!tab.foiInicializado(t.image))
                         System.err.println("ERRO!\u005cn Erro Semantico: A v\u00e1riavel \u005c"" + t.image + "\u005c" n\u00e3o foi inicializada\u005cn");
-                item = new Item('v', t.image);
-        listaExp.inclui(item);
       break;
     case TEXTO:
       t = jj_consume_token(TEXTO);
